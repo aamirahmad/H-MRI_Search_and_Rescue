@@ -10,5 +10,7 @@ Clone all the folders in this repository. Each folder is a ROS package and has s
 
 https://github.com/aamirahmad/telekyb.git
 
+# Notes
 
+1. A publication related to this experimental setup is currently under review and will be cited here in case of acceptance. 
 
