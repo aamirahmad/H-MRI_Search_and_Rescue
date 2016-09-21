@@ -1,0 +1,18 @@
+from bge import logic as GameLogic
+
+
+def DeAktiveer():
+	own['Aktief'] = False
+	NieuwUiterlijk = cont.actuators["VeranderUiterlijk"]
+	NieuwUiterlijk.mesh = "BlauweBalk"
+	cont.activate( NieuwUiterlijk )
+	
+	
+cont = GameLogic.getCurrentController()
+own = cont.owner
+
+	
+DeAktiveren = cont.sensors["DeAktiveer"]
+if  DeAktiveren.positive :
+	DeAktiveer()
+	print (own.name,": gedeactiveerd")

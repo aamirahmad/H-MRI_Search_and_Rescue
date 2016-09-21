@@ -1,0 +1,47 @@
+
+
+
+import Rasterizer as R
+from bge import logic as GameLogic
+
+cont = GameLogic.getCurrentController()
+scn = GameLogic.getCurrentScene()
+own = cont.owner
+
+R.showMouse(True)
+
+scene = GameLogic.getCurrentScene()
+MouseOver = cont.sensors["MouseOver"]
+
+if own['Draging'] and MouseOver.positive and own['Selected'] in scene.objects:
+	if not own['Selected']['Aktief']:
+		own['Selected']["Aktief"] = True
+	# Vind de nieuwe positie van de muiscursor
+	# in 3D coordinaten op het grondvlak
+	HitObject = MouseOver.hitObject
+	HitPosition = MouseOver.hitPosition
+	Xhit = HitPosition[0]
+	Yhit = HitPosition[1]
+	Zhit = HitPosition[2]
+	own['Xhit'] = Xhit
+	own['Yhit'] = Yhit
+	own['Zhit'] = Zhit
+	
+	
+	# Zendt messageBody naar het huidige actieve object
+	# met daarin de X,Y,Z- coordinaten
+	# van het punt waar het voorwerp naar toe moet
+	# gebruik ";" als scheidingteken
+	Verplaats = cont.actuators["SendMessage"]
+	Verplaats.subject = "Verplaatsen"
+
+	Verplaats.propName = str(own['Selected'])
+	#Verplaats.setBodyType(False)
+	Inhoud = str(Xhit )+";"+ str(Yhit) +";" + str(Zhit)
+	Verplaats.body = Inhoud 
+	cont.activate(Verplaats)
+
+	
+	
+	
+	

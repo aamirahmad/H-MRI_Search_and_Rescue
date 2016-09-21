@@ -1,0 +1,79 @@
+<?xml version="1.0"?>
+<sdf version="1.4">
+  <world name="default">
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+    <include>
+      <uri>model://sun</uri>
+    </include>
+    <model name="sidewall">
+      <pose>0 0 0  0 0 0</pose>
+      <static>true</static>
+      <link name="body">
+        <visual name="visual">
+          <geometry>
+            <mesh><uri>file://models/sidewall.dae</uri></mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    
+    <model name="sidewall">
+      <pose>1 2 0  0 0 0</pose>
+      <static>true</static>
+      <link name="body">
+        <visual name="visual">
+          <geometry>
+            <mesh><uri>file://models/sidewall.dae</uri></mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="barrel">
+      <pose>2 2 0  0 0 0</pose>
+      <static>true</static>
+      <link name="body">
+        <visual name="visual">
+          <geometry>
+            <mesh><uri>file://models/barrel.dae</uri></mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="uneven_surface">
+      <pose>0 1 0  0 0 0</pose>
+      <static>true</static>
+      <link name="body">
+        <visual name="visual">
+          <geometry>
+            <mesh><uri>file://models/uneven_surface.dae</uri></mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="ramp">
+      <pose>1 1 0  0 0 0</pose>
+      <static>true</static>
+      <link name="body">
+        <visual name="visual">
+          <geometry>
+            <mesh><uri>file://models/ramp.dae</uri></mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="uneven_surface_cr">
+      <pose>1 1 0  0 0 0</pose>
+      <static>true</static>
+      <link name="body">
+        <visual name="visual">
+          <geometry>
+            <mesh><uri>file://models/uneven_surface_cr.dae</uri></mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+  </world>
+</sdf>
+

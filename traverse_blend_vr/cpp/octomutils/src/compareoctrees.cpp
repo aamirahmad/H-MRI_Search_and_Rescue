@@ -1,4 +1,5 @@
 #include "compareoctrees.h"
+
 using namespace std;
 CompareOcTrees::CompareOcTrees(){}
 CompareOcTrees::~CompareOcTrees(){ }
@@ -12,7 +13,7 @@ CompareOcTrees::~CompareOcTrees(){ }
 * \param origin: the origin of the node
 * \param size: the volume of the node, because its a cube only one float is sufficient
 */
-vector<Origin> CompareOcTrees::calcOrigin(std::bitset<8>  child1to4,std::bitset<8>  child5to8, float resolution, int current_depth, Origin origin){
+vector<Origin> CompareOcTrees::calcOrigin(std::bitset<8>  node1to4,std::bitset<8>  node5to8, float resolution, int current_depth, Origin origin){
     vector<Origin> origins;
 
     // quarter the size
@@ -21,31 +22,50 @@ vector<Origin> CompareOcTrees::calcOrigin(std::bitset<8>  child1to4,std::bitset<
     // this array describes the order of the child node origins
     // the origins are translated in a binary fashin where 0 corresponds to - and 1 to +
     // the list can be seen as tripple of xyz translations
-    int XYZ[24] = {-1,-1,-1, 1,-1,-1, -1,1,-1, 1,1,-1, -1,-1,1, 1,-1,1, -1,1,1, 1,1,1};
+    //    int XYZ_5to8[24] = { 1, 1, 1,-1, 1, 1, 1,-1, 1,-1,-1, 1};
+    //    int XYZ_1to4[24] = {-1,-1,-1, 1,-1,-1,-1, 1,-1, 1, 1,-1,};
+
+    int XYZ_1to4[24] = { -1,-1,-1       ,1,-1,-1,        -1,1,-1    ,1,1,-1};
+    int XYZ_5to8[24] = {-1,-1,1,       1,-1,1,         -1,1,1,         1,1,1};
+
+
+
     //    int XYZ[24] = {1,1,1, -1,1,1, 1,-1,1, -1,-1,1, 1,1,-1, -1,1,-1, 1,-1,-1, -1,-1,-1};
+    //    int XYZ[24] = {1,1,1, 1,1,-1, 1,-1,1, 1,-1,-1, -1,1,1, -1,1,-1, -1,-1,1, -1,-1,-1};
     // calc x y and z according to the order adding or subtracting res/4 depending on the childs position
     //    float child_position[24];
     // get the binary representation of the node
 
-    bitset<8> childntom;
-    for(size_t i =0; i < 8;i++){
-        // select the part of the node we are in
-        if(i < 4){
-            childntom = child1to4;
-        }else{
-            childntom = child5to8;
+
+    int childCount_5to8 = 0;
+    for(size_t i = 0; i < 4;i++){
+        if (node5to8[2*i+1] == 1 && node5to8[2*i] == 1){
+            //            std::cout << child5to8 <<  " " << occupied <<  std::endl;
+            float x = origin.x+r4*XYZ_5to8[i*3+0];
+            float y = origin.y+r4*XYZ_5to8[i*3+1];
+            float z = origin.z+r4*XYZ_5to8[i*3+2];
+            childCount_5to8 += 1;
+            origins.push_back(Origin(x,y,z));
         }
-        // only if therere is a child node add the origin to the list
-        if ((((childntom) & (std::bitset<8>((3 << 3*2) >> i%4*2))) == (std::bitset<8>((3 << 3*2) >> i%4*2)))){
-            // calculate the new child node origin according to the list above
-            // adding or subtracting a quarter of the current node size accordingly
-            //cout << r4*XYZ[i*3+0] << " " << r4*XYZ[i*3+1] << " " << r4*XYZ[i*3+2] << endl;
-            float x = origin.x+r4*XYZ[i*3+0];
-            float y = origin.y+r4*XYZ[i*3+1];
-            float z = origin.z+r4*XYZ[i*3+2];
+
+    }
+    int childCount_1to4 = 0;
+    for(size_t i = 0; i < 4;i++){
+        if (node1to4[2*i+1] == 1 && node1to4[2*i] == 1){
+            //            std::cout << child1to4 <<  " " << occupied <<  std::endl;
+            float x = origin.x+r4*XYZ_1to4[i*3+0];
+            float y = origin.y+r4*XYZ_1to4[i*3+1];
+            float z = origin.z+r4*XYZ_1to4[i*3+2];
+            childCount_1to4 += 1;
             origins.push_back(Origin(x,y,z));
         }
     }
+
+    // reverse the order of the origins because bits are read from left to right or LSB first
+
+    std::reverse(origins.begin(),origins.begin()+childCount_5to8);
+    std::reverse(origins.begin()+childCount_5to8,origins.end());
+
     // return the vector of origins
     return origins;
 }
@@ -154,28 +174,30 @@ vector<Subtree> CompareOcTrees::getSubtrees_iter(std::vector<std::bitset<8> > *t
 
     vector<Origin> subTreeOrigins = this->calcOrigin(root_1to4,root_5to8,resolution,0,Origin(0,0,0));
 
+    //    for(vector<Origin>::iterator it = subTreeOrigins.begin(); it!= subTreeOrigins.end();it++){
+    //        (*it).printOrigin();
+    //    }
     // TODO check if the order of origins is correct
     //std::reverse(subTreeOrigins.begin(),subTreeOrigins.end());
     // loop through the tree once (without the root)
     //    return std::vector<Subtree>();
     int i = 0; // initialize the tree idx
-    for(vector<bitset<8> >::iterator it=tree->begin();it!=tree->end();++it){
+    for(vector<bitset<8> >::iterator it=tree->begin()+2;it!=tree->end();++it){
 
         node_1to4 = (*it); // store the current node in the node varialble
-        ++it; // advance the iterator once more because one node is stored not in 8 but 16 bits
+        it++; // advance the iterator once more because one node is stored not in 8 but 16 bits
         node_5to8 = (*it); // store the current node in the node varialble
-        i = it - tree->begin();
-//        cout << node_1to4 << " " << node_5to8 << " " << i << endl;
+        i = it - tree->begin()-2;
 
 
         //        cout << node_1to4 << node_5to8 << " " << branchCounter << " "<<  depth << " i: " << i << endl;
         // at a depth of 10 we collect all subtrees
         if (depth == 10){
             // update the subTreePointer to the current index plus one
-            subTreePointer = i+2;
+            subTreePointer = i+1;
             // set the end pointer of the previous subTree (for convinience later on)
             if(subTrees.size() > 0){
-                subTrees.back().setLength(i+2);
+                subTrees.back().setLength(subTreePointer);
             }
             //append subtrees
             subTrees.push_back(Subtree(subTreePointer,depth,origins.back(),this->calcSize(resolution,depth)));
@@ -184,44 +206,56 @@ vector<Subtree> CompareOcTrees::getSubtrees_iter(std::vector<std::bitset<8> > *t
         // branchCounter at zero means that a new subtree is starting
         if (branchCounter == 0){
             // reset the origins vector
-            origins.empty();
+            origins.clear();
             // set the corresponding origin of the current (of the eight base) subtree
-            origins.push_back(subTreeOrigins[subTree]);
-            subTree += 1; // the nexttime around we consider the next subtree
+
+            origins.push_back(subTreeOrigins.back());
+            subTreeOrigins.pop_back();
             depth = 1; // at the toplevel depth is eq to one
             // the depth at branch on the toplevel is one (one below the root)
             depthAtBranch.push_back(1);
             // reset the branch counter to one
             branchCounter = 1;
-            // update the subTreePointer to the current index plus one
+            // update the subTreePointer to the current index plus one node (=2)
             subTreePointer = i+1;
             //            subTrees.push_back(Subtree(subTreePointer,depth,Origin(0.,0.,0.),0.));
         }
-        if(isLeafNode(node_1to4,node_5to8)){
+
+        if(CompareOcTrees::isLeafNode(node_1to4,node_5to8)){
             // if this is a leaf node we close one branch
             branchCounter -= 1;
             // and set the depth back to that depth of the last branch
             depth = depthAtBranch.back();
             depthAtBranch.pop_back();
+            // remove origins of leafnodes
+            origins.pop_back();
         }else{
             // get the origins of the child nodes
             vector<Origin> origins_tmp = this->calcOrigin(node_1to4,node_5to8,resolution,depth,origins.back());
-            // we need to reverse the order of the origins because the origins are accessed in a first in first out fashion
-            // and the next origin is always taken from the back of the vector
-            std::reverse(origins_tmp.begin(),origins_tmp.end());
+
+
             // remove the last element
             origins.pop_back();
             // append the newly found origins to the set of origins
             origins.insert(origins.end(), origins_tmp.begin(), origins_tmp.end());
-
-
             int branchCount = getBranchCount(node_1to4,node_5to8)-1;
+            //            if(i < 76){
+            //                cout << "branch count " << branchCount  << " depth " << depth << endl;
+            //                for (std::vector<Origin>::iterator origing_iter=origins.begin(); origing_iter!=origins.end(); ++origing_iter){
+            //                    (*origing_iter).printOrigin();
+            //                }
+            //                cout << endl;
+            //            }
+
+
             branchCounter += branchCount;
             if (branchCount > 0){
                 for (size_t k = 0; k < branchCount; k++){
                     depthAtBranch.push_back(depth+1);
                 }
+
             }
+
             depth += 1;
         }
     }
@@ -254,44 +288,108 @@ void CompareOcTrees::compare(BinaryOctree *orig_tree, BinaryOctree *up_tree){
     this->compare(orig_tree,&orig_subTrees,up_tree,&up_subTrees);
 
 }
-void CompareOcTrees::compare(BinaryOctree *orig_tree, vector<Subtree> *orig_subTrees, BinaryOctree *up_tree, vector<Subtree> *up_subTrees){
+/**
+ * @brief CompareOcTrees::compare the subtrees within two vectors
+ * @param orig_tree binary octree which holds the actual data to compare
+ * @param orig_subTrees subtree container which holds the definitions of the subtrees (start,end point etc)
+ * @param up_tree second binary octree to compare two
+ * @param up_subTrees subtree container of second tree
+ */
+void CompareOcTrees::compare(BinaryOctree *tree_fst, vector<Subtree> *subtree_fst, BinaryOctree *tree_snd, vector<Subtree> *subtree_snd){
     clock_t cstart;
     cstart = clock();
-    for(size_t i = 0; i < orig_subTrees->size();i++){
+    // remeber the size of the second subtree
+    int snd_subtree_size = subtree_snd->size();
+    std::vector<int> idx;
+    int update_count = 0;
+    for(std::vector<Subtree >::iterator it = subtree_fst->begin(); it != subtree_fst->end(); it++){
+        Origin O_fst = (*(*it).getOrigin());
+        int lower_fst = (*it).getSubTreePointer();
+        int upper_fst = (*it).getSubTreeEndPointer() == 0 ? tree_fst->getData()->size() : (*it).getSubTreeEndPointer() ;
+        for(std::vector<Subtree >::iterator jt = subtree_snd->begin(); jt != subtree_snd->end(); jt++){
+            int lower_snd = (*jt).getSubTreePointer();
+            int upper_snd = (*jt).getSubTreeEndPointer()== 0 ? tree_snd->getData()->size() : (*jt).getSubTreeEndPointer() ;;
 
-        // under the assumption that no subtree vanishes only subtrees are added
-        for(size_t j = 0; j < up_subTrees->size();j++){
-            if ((*(*orig_subTrees)[i].getOrigin()) == (*(*up_subTrees)[j].getOrigin())){
-                // find upper and lower bounds for the subtrees
-                int orig_ub = i+1 < orig_subTrees->size() ? (*orig_subTrees)[i+1].getSubTreePointer() : orig_tree->getData()->size();
-                int orig_lb = (*orig_subTrees)[i].getSubTreePointer();
-                int up_ub = j+1 < up_subTrees->size() ? (*up_subTrees)[j+1].getSubTreePointer() : up_tree->getData()->size();
-                int up_lb =  (*up_subTrees)[j].getSubTreePointer();
-                // compare the two subtrees
-                if(!this->compareSubTrees(orig_tree->getData(),orig_lb,orig_ub,up_tree->getData(),up_lb,up_ub)){
-                    cout << "subTree " << j << " needs to be updated "<< endl;
+            Origin O_snd = (*(*jt).getOrigin());
+            // finding corresponding suptrees
+            if(O_fst == O_snd){
+                //                cout << compareSubTrees(tree_fst->getData(),lower_fst,upper_fst,tree_snd->getData(),lower_snd,upper_snd) << endl;
+                if(subtrees_areEqual(tree_fst->getData(),lower_fst,upper_fst,tree_snd->getData(),lower_snd,upper_snd)){
+                    // subtrees not to update
+                    idx.push_back(subtree_snd->end() - jt);
                 }else{
-                    (*up_subTrees).erase(up_subTrees->begin() + j);
-                }
-                break;
-            }
-        }
+                    cout << "found subtree to update " << endl;
 
+                    cout << "start index fst " << lower_fst << " " << lower_snd << endl << "start index snd " << upper_fst << " " << upper_snd << endl;
+                    cout << "len subtree fst " << upper_fst-lower_fst << endl << "len subtree snd " <<  upper_snd - lower_snd << endl;
+                    cout << ++update_count << endl;
+                }
+
+            }
+
+
+        }
     }
+    // making sure that the biggest index comes first and is ordered down to the smallest one
+    // this comesin handy when removing from the subtree vector by index
+    std::sort(idx.begin(),idx.end(),std::greater<int>());
+
+    for(std::vector<int>::iterator kt = idx.begin(); kt != idx.end(); kt++){
+        subtree_snd->erase(subtree_snd->begin() + (*kt));
+      }
+
     std::cout <<"comparing subtrees  " << float(clock()-cstart)/float(CLOCKS_PER_SEC) << std::endl;
-    cout << up_subTrees->size() << " subtrees needs to be updated or replaced" << endl;
+    cout << subtree_snd->size() << "/" << snd_subtree_size << " subtrees needs to be updated or replaced" << endl;
 }
-/** \brief comparing two trees with its binary representation, first thing to test is the length of both
+
+/**
+ * @brief CompareOcTrees::compareSubTrees using iterators, this method compared to the second implementation is rather slow
+ * @param it_fst start iterator of the first subtree
+ * @param upper_fst end iterator of the first subtree
+ * @param it_snd start iterator of the second subtree
+ * @param upper_snd end iterator of the second subtree
+ * @return boolean wheather the two subtrees are identical
+ */
+bool CompareOcTrees::subtrees_areEqual(vector<bitset<8> >::iterator it_fst, vector<bitset<8> >::iterator upper_fst, vector<bitset<8> >::iterator it_snd, vector<bitset<8> >::iterator upper_snd){
+
+    if((upper_fst-it_fst) != upper_snd - it_snd){
+        cout << " they don't match in size" << endl;
+        return false;
+    }
+    while(it_fst != upper_fst && it_snd != upper_snd){
+        if((*it_fst) != (*it_snd))
+            return false;
+
+        it_fst++;
+        it_snd++;
+    }
+    return true;
+}
+
+/** @brief comparing two trees with its binary representation, first thing to test is the length of both
  *  if they differ then the two subtrees cannot be equal, after that the subtrees can be compared bitwise
  *
- * \param tree1:
- * \param tree2: the two trees which should be compared
+ * @param tree1:
+ * @param tree2: the two trees which should be compared
  */
-bool CompareOcTrees::compareSubTrees(std::vector<std::bitset<8> > *data_tree1, int lb1, int ub1, std::vector<std::bitset<8> > *data_tree2, int lb2, int ub2){
+
+/**
+ * @brief CompareOcTrees::compareSubTrees comparing two trees with its binary representation, first thing to test is the length of both
+ *  if they differ then the two subtrees cannot be equal, after that the subtrees can be compared bitwis
+ * @param data_tree1 pointer to the data vector of the first tree
+ * @param lb1 lower bound of the first subtree
+ * @param ub1 upper bound of the first subtree
+ * @param data_tree2 pointer to the data of the second tree
+ * @param lb2 lower_bound of the second subtree
+ * @param ub2 uppber bound of the second subtree
+ * @return bolean wheather the two subtrees are equal
+ */
+bool CompareOcTrees::subtrees_areEqual(std::vector<std::bitset<8> > *data_tree1, int lb1, int ub1, std::vector<std::bitset<8> > *data_tree2, int lb2, int ub2){
 
 
     // subtrees must have same size
     if(ub1-lb1 != ub2-lb2){
+        cout << "\t they don't match in size" << endl;
         return false;
     }
     bitset<8> node1_1to4;
@@ -305,16 +403,14 @@ bool CompareOcTrees::compareSubTrees(std::vector<std::bitset<8> > *data_tree1, i
     //   std::cout << "node count " << ub1-lb1 << " lower bound " << lb1 << " upper bound " << ub1 << " " << tree1->size()  << std::endl;
 
 
-    for(size_t i=0;i < (ub1-lb1);i+=2){
+
+    for(size_t i=0;i < (ub1-lb1);i++){
 
         node1_1to4 = (*data_tree1)[lb1+i];
-        node1_5to8 = (*data_tree1)[lb1+i+1];
-
         node2_1to4 = (*data_tree2)[lb2+i];
-        node2_5to8 = (*data_tree2)[lb2+i+1];
 
         //        std::cout << "is occupied? " << this->isOccupied(node2_1to4,node2_5to8) << std::endl;
-        if(node1_1to4 != node2_1to4 || node1_5to8 != node2_5to8){
+        if(node1_1to4 != node2_1to4){
             return false;
         }
 

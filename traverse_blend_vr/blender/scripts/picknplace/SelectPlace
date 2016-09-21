@@ -1,0 +1,19 @@
+
+from bge import logic as GameLogic
+
+cont = GameLogic.getCurrentController()
+own = cont.owner
+
+
+RMB = cont.sensors["RMB"]
+if RMB.positive :
+	# Zendt een bericht object
+	# waarmee het zichzelf de-aktiveert 
+	DeAktiveer = cont.actuators["ZendMededeling"]
+	DeAktiveer.subject = "DeAktiveer"
+	DeAktiveer.propName = str(own['Selected'])
+	cont.activate(DeAktiveer )
+
+
+	own['p'] = own['p'] + 1
+	own['Draging'] = False

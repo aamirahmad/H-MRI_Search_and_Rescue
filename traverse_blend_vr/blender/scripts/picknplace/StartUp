@@ -1,0 +1,64 @@
+
+
+import Rasterizer as R
+from bge import logic as GameLogic
+import bpy
+import sys
+sys.path.append("/usr/local/lib/python3.4/dist-packages/rospkg-1.0.35-py3.4.egg")
+sys.path.append("/usr/local/lib/python3.4/dist-packages/catkin_pkg")
+
+import datetime
+import subprocess
+
+try:
+    import roslib
+except ImportError as error:
+    raise error
+import rospy
+
+from geometry_msgs.msg import Pose
+
+
+def addUAV(id):
+	newObject = cont.actuators["AddUAV"]
+	newObject.object = "Sphere"
+	newObject.time = 0
+	newObject.instantAddObject()
+	#cont.activate( newObject )
+	#newObject.lastCreatedObject
+
+	
+
+cont = GameLogic.getCurrentController()
+scn = GameLogic.getCurrentScene()
+own = cont.owner
+
+if __name__ == "__main__":
+	base = scn.objects['Base']
+	print("Setup .......")
+	subprocess.call(["rosservice", "call","/TeleKyb/flyto_safe_master/startsignalvr"])
+	# make the logfile unique
+	own['log_file'] = own['log_file'] + "_" + str(datetime.datetime.now().isoformat()).replace(":","_")
+	print(own['log_file'])
+	own['ros_node'] = rospy.init_node('blender_ros', anonymous=False)
+
+	for prop in base.getPropertyNames():
+		if prop.startswith("uav_"):
+			core_id = base[prop]
+			print(prop,core_id)
+			own['ros_pub_' + str(core_id)] = rospy.Publisher('filtFlyTo_' + str(core_id), Pose, queue_size=10)
+			addUAV(core_id)
+			addedObj  = cont.actuators["AddUAV"].objectLastCreated
+			addedObj['uav_id'] = core_id
+
+
+	for obj in scn.objects:
+		print(obj,obj.getPropertyNames())
+	print(base.getPropertyNames())
+	# send msg to menu controller to change buttons
+	opModeMsg = cont.actuators["sendOpModeMsg"]
+	opModeMsg.subject = "Activate"
+	opModeMsg.propName = base["op_mode"]
+	cont.activate(opModeMsg)	
+	
+	

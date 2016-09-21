@@ -1,0 +1,63 @@
+
+from math import sqrt
+from math import sin
+from math import cos
+from math import pi
+
+# Functie definities voor rotatie van orientaie-matrix  -- #
+
+def Verm3x3Matrix( Rot, Org):
+# vermenigvuldigt twee 3x3 matrices	
+  Res = [ [0,0,0],[0,0,0],[0,0,0]]
+  for kol in range(0,3) :
+      for rij in range(0,3) :
+          for t in range(0,3) :
+              Res[rij][kol] += round( Rot[rij][t]*Org[t][kol], 4)
+  return Res
+
+def MaakRotatieMatrix(alpha, beta, gamma):
+# maakt een rotatie-matrix op	
+    a = cos(alpha)
+    b = sin(alpha)
+    c = cos(beta)
+    d = sin(beta)
+    e = cos(gamma)
+    f = sin(gamma)
+    ad = a*d
+    bd = b*d
+    matrix = [[c*e, -a*f+b*d*e,  b*f+a*d*e],
+        [c*f, a*e+b*d*f, -b*e+a*d*f],
+        [-d, b*c, a*c]]
+    return matrix
+
+def radians(deg):
+# rekent graden om naar radialen
+	return (deg / 360.0) * 2 * pi
+
+# --- De eigenlijke rotatie-procedure ---------------
+
+def Draai():
+	# Voert de eigenlijke rotatie-aktie uit
+	own['med'] = own['med'] + 1
+	#Haal Orientatie-Matrix van dit object
+	OrientatieMatrix = own.orientation
+	#Maak Rotatie-Matrix op
+	alpha = radians( 0 )   #rotatie om x-as
+	beta = radians( 0 )  #rotatie om y-as
+	gamma = radians( -15 )   #rotatie om z-as
+	RotatieMatrix = MaakRotatieMatrix(alpha, beta, gamma)
+	# Vermenigvuldig beide matrices
+	Resultaat = Verm3x3Matrix( RotatieMatrix,OrientatieMatrix )
+	# Neem het resultaat als nieuwe orientatie-matrix
+	own.orientation = Resultaat 
+	
+from bge import logic as GameLogic	
+cont = GameLogic.getCurrentController()
+own = cont.owner
+
+	
+Roteren = cont.sensors["RoteerRechts"]
+if  Roteren.positive and ['Aktief']  :
+	Draai()
+	print (own.name, ": Rechtsom gedraaid")
+	

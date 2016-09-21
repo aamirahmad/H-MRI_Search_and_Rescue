@@ -1,0 +1,65 @@
+from bge import logic as GameLogic
+import string as str     # nodig voor de stringfuncties
+
+
+# -------------- Functiedefinities ----------------------
+
+def DoeAktie() :
+	Verplaats = cont.sensors["Verplaats"]
+	if  Verplaats.positive:
+		# Haal de inhoud van dit bericht dit is een lijst
+		Bericht = Verplaats.bodies
+		# decodeer het bericht, het bestaat uit drie reële getallen
+		# die de X,Y,Z-positie van een punt weergeven
+
+		# maak een tekstString van het bericht (eerste (en enige item) bevat de gegevens)
+		tekst = Bericht[0]
+		#print(Bericht)
+		# maakt een lijst met strings uit deze tekstString
+		Waarden = tekst.split(";")
+		# Zet elke string om in een reëel getal
+		X = float(Waarden[0])
+		Y = float(Waarden[1])
+		Z = float(Waarden[2])
+		own['Xdest'] = X
+		own['Ydest'] = Y
+		own['Zdest'] = Z
+
+
+		GrondSensor = cont.sensors["GrondSensor"]
+		HitPositie = GrondSensor.hitPosition
+
+		Z = HitPositie[2]+3   # hoogte nog laten afhangen van terrein
+	 	           # en de hoogte vn het symbool
+
+
+		own.position = [X,Y,Z]
+		
+
+# ------------- Eigenlijke programma ------------------------
+
+cont = GameLogic.getCurrentController()
+scn = GameLogic.getCurrentScene()
+own = cont.owner
+
+if own['uav_id'] == scn.objects['Base']['selected_uav']:
+	if own['Aktief'] == True :
+		DoeAktie()
+		#print (own.name,": is verplaatst")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

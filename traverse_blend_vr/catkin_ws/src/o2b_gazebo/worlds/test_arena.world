@@ -1,0 +1,23 @@
+<sdf version="1.4">
+  <world name="arena.0004">
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+    <include>
+      <uri>model://sun</uri>
+    </include>
+    <model name="barrel.001">
+      <pose>-3.490981101989746 5.4643073081970215 0.49000000953674316  0.0 0.0 0.0</pose>
+      <static>true</static>
+      <link name="body">
+	<visual name="visual">
+        <geometry>
+          <mesh>
+            <uri>file://models/barrel.dae</uri>
+          </mesh>
+        </geometry>
+	</visual>
+      </link>
+    </model>
+  </world>
+</sdf>

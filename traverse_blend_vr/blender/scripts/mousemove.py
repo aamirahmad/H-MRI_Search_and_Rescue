@@ -29,6 +29,7 @@
 #  Config Properties for more information.
 ################################################
 
+
 # Print debug messages in the console
 DEBUG_MESSAGES = True
 
@@ -39,6 +40,7 @@ mmc{
 	(bool) mouselook = true
 	(bool) static = false
 	(bool) dynamic = false
+	(bool) cam_check = true
 	
 	### Left handed layout ###
 	(bool) lefthanded = false
@@ -53,9 +55,12 @@ mmc{
 # Mouselook Properties
 ml{
 	### Basic Properties ###
-	(num) sensitivity = 2
+	(num) sensitivity = 0.05
+	(bool) rotate_only = false
+	(bool) use_oculus = false
 	(bool) invert = false
 	(bool) inherit = true
+	(bool) disable = false
 	
 	# inherit: parent object inherits left/right rotation
 	
@@ -69,15 +74,17 @@ ml{
 	# 	on the X axis, in degrees.
 }
 
+
 # Static Movement Properties
 sm{
 	### Basic Properties ###
 	(num) speed = 0.1
+	(num) jump_strength = 1
 	(bool) cameramode = true
 	
 	# speed: uses Blender units
 	# cameramode:
-	#	-True: -Z is forward axis for movement
+	#	-True: -X is forward axis for movement
 	# 	-False: +Y is forward axis for movement
 }
 
@@ -104,9 +111,13 @@ from bge import logic, render, events
 from mathutils import Vector
 import math
 
+
+
+
 # MouseMove Core
 class Core:
 	def __init__(self, object):
+		
 		self.own = object
 		self.cont = None
 		
@@ -125,7 +136,7 @@ class Core:
 	
 	def module(self):
 		self.main()
-		
+	
 		### Mouselook System ###
 		if self.props['mouselook']:
 			if not self.features.get('mouselook', None):
@@ -158,7 +169,7 @@ class Core:
 				self.features[i].deactivate()
 	
 	def create(self, key, object):
-		features = {'mouselook':Mouselook, 'static':StaticMove, 'dynamic':DynamicMove}
+		features = {'mouselook':Mouselook,'static':StaticMove, 'dynamic':DynamicMove}
 		
 		if key in self.features:
 			msg('Core Feature "', key, '" already created! Returning None')
@@ -172,7 +183,8 @@ class Core:
 	def addMouselook(self, object=None):
 		self.setProp('mmc.mouselook', True)
 		return self.create('mouselook', object)
-		
+
+
 	def addStatic(self, object=None):
 		self.setProp('mmc.static', True)
 		return self.create('static', object)
@@ -352,34 +364,52 @@ class Mouselook:
 		self.ready = False
 		
 		# Mouselook Attributes
+
 		self.size = self.getWindowSize()
+		self.setCenter()
 		self.move = self.getMovement()
 		self.verticalRotation = self.own.localOrientation.to_euler().x * (180 / math.pi)
-		
+		self.keyboard = logic.keyboard	
+		self.JUST_ACTIVATED = logic.KX_INPUT_JUST_ACTIVATED  
+		self.JUST_RELEASED = logic.KX_INPUT_JUST_RELEASED
+		self.own['disable'] = False  
+  
 	def main(self):
 		self.props = self.core.getProperties('ml')
 		self.size = self.getWindowSize()
 		self.move = self.getMovement()
-		
-		if self.ready:
-			self.run()
-		else:
-			self.activate()
+
+		if not self.own['disable']:
+			if self.ready:
+			       self.run()
+			else:
+			       self.activate()
 		
 	def run(self):
 		invert = -1 if self.props['invert'] else 1
-		sensitivity = self.props['sensitivity'] * 0.025
-		
+		sensitivity = self.props['sensitivity'] 
+		# cut off jumps 
+		for i in range(2):
+			if abs(self.move[i]) > 50:
+				sensitivity = 0
+
 		horizontal = self.move[0] * sensitivity * invert
-		vertical = self.move[1] * sensitivity * invert
-		
+		vertical = self.move[1] * sensitivity * invert 
+		# preventing jumps
+		if self.props['rotate_only']:
+			vertical = 0.0
+
+
 		### Set vertical rotation (X) and apply capping ###
 		self.verticalRotation += vertical
 		self.applyCap()
 		
+
+			
 		ori = self.own.localOrientation.to_euler()
 		ori.x = self.verticalRotation / (180 / math.pi)
 		
+#		print(ori,self.own.name)
 		if (self.props['inherit'] == False) or (self.own.parent == None):
 			ori.z += horizontal / (180 / math.pi)
 			
@@ -387,10 +417,11 @@ class Mouselook:
 			parentOri = self.own.parent.localOrientation.to_euler()
 			parentOri.z += horizontal / (180 / math.pi)
 			self.own.parent.localOrientation = parentOri.to_matrix()
-		
+    
 		self.own.localOrientation = ori.to_matrix()
 		
 		self.setCenter()
+		
 		
 	### "Get Property" Functions ###
 	def getWindowSize(self):
@@ -399,6 +430,7 @@ class Mouselook:
 	def getMovement(self):
 		pos = logic.mouse.position
 		realCenter = self.getCenter()
+		
 		move = [realCenter[0] - pos[0], realCenter[1] - pos[1]]
 		
 		xMove = int(self.size[0] * move[0])
@@ -439,6 +471,8 @@ class Mouselook:
 		self.ready = False
 
 	
+
+	
 class StaticMove:
 	def __init__(self, core, object=None):
 		self.core = core
@@ -466,22 +500,32 @@ class StaticMove:
 		controls = self.core.controls
 		
 		speed = self.props['speed']
+		jump_strength = self.props['jump_strength']
 		camera = self.props['cameramode']
 		
 		if controls.run:
-			speed *= 4
+			speed *= 2
 		
 		forward = speed * (controls.forward - controls.back)
 		side = speed * (controls.right - controls.left)
-		fly = speed * ((controls.jump or controls.up) - (controls.crouch or controls.down))
+		fly = speed * (controls.up - controls.down)
 		
 		if camera:
-			move = Vector((side, 0, -forward))
+			move = Vector((-forward, side, 0))
 		else:
 			move = Vector((side, forward, 0))
 		
 		self.own.applyMovement(move, True) # local
-		self.own.applyMovement([0, 0, fly], False) # global
+
+		if controls.jump == controls.JUST_ACTIVATED:
+			print(controls.jump,controls.JUST_ACTIVATED)
+
+			self.own.applyMovement([0, 0, jump_strength], True) # global
+			print(self.own.position)
+		elif controls.up:
+			self.own.applyMovement([0, 0, fly], False) # global
+
+		
 	
 	### Activation/Deactivation ###
 	def activate(self):
@@ -493,7 +537,7 @@ class StaticMove:
 	
 class DynamicMove:
 	def __init__(self, core, object=None):
-		print("dynamic move init")
+		
 		self.core = core
 		
 		self.cont = None
@@ -715,6 +759,7 @@ class Controls:
 	def __init__(self, core):
 		self.core = core
 		self.main()
+		self.JUST_ACTIVATED = logic.KX_INPUT_JUST_ACTIVATED
 		
 	def main(self):
 		key = logic.keyboard.events
@@ -771,29 +816,48 @@ def msg(*args):
 	if DEBUG_MESSAGES:
 		print('[MouseMove] ' + message)
 	
-#################################
 
+        
 # Module Execution entry point
 def main(contr):
+#    # get the object this script is attached to
+#    if deactivate(contr):
+#        return
+        
+    owner = contr.owner
+    # get a list of the children game objects
+    childList = owner.children
+    scene = logic.getCurrentScene()
+    if not scene:
+        msg("not ready")
+        # not ready, main reload(blenderapi)
+        return
+    cont = logic.getCurrentController()
 
-	# get the object this script is attached to
-	camera = contr.owner
-	scene = logic.getCurrentScene()
-	if not scene:
-		# not ready, main reload(blenderapi)
-		return
-	cont = logic.getCurrentController()
-	own = cont.owner
-	
-	# Do not move the camera if the current view is using another camera
-	if camera != scene.active_camera:
-		return
+    if not scene.objects['Desk']['game']:
+        return 
+ 
+    keyboard = logic.keyboard
+    JUST_ACTIVATED = logic.KX_INPUT_JUST_ACTIVATED
+    if keyboard.events[events.LEFTCTRLKEY] == JUST_ACTIVATED:
+            owner['active'] = not owner['active']
+  
+    if not owner['active']:
+        return
+    
 
-	if 'mmc.core' not in own:
-		own['mmc.core'] = Core(cont)
-	else:
-		own['mmc.core'].module()
-	
-# Non-Module Execution entry point (Script)
-if logic.getCurrentController().mode == 0:
-	main()
+        
+    if owner['mmc.cam_check']:
+        # Do not move the camera if the current view is using another camera
+        if owner != scene.active_camera and (scene.active_camera not in childList):
+            #		msg("not the active camera ",owner.name," ",scene.active_camera)
+            return
+    if 'mmc.core' not in owner:
+        owner['mmc.core'] = Core(cont)
+    else:
+        owner['mmc.core'].module()
+
+if __name__ == "__main__": 
+	# Non-Module Execution entry point (Script)
+	if logic.getCurrentController().mode == 0:
+		main(logic.getCurrentController())

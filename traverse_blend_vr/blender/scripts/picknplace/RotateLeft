@@ -1,0 +1,14 @@
+
+from bge import logic as GameLogic
+
+cont = GameLogic.getCurrentController()
+own = cont.owner
+
+Roteren = cont.sensors["RoteerLinks"]
+if Roteren.positive and own['Draging'] :
+	# Zendt een bericht object
+	# zodat het zichzelf rechtsom roteert 
+	Roteren = cont.actuators["ZendMededeling"]
+	Roteren.subject = "DraaiLinks"
+	Roteren.propName = str(own['Selected'])
+	cont.activate(Roteren )

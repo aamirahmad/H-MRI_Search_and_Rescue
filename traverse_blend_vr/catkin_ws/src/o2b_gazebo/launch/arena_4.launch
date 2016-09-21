@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+
+<launch>
+  <arg name="gui" default="true"/>
+
+  <include file="$(find o2b_gazebo)/launch/start.launch">
+   <arg name="world" value="arena_4.world"/>
+   <arg name="gui" value="$(arg gui)"/> 
+  </include>
+
+</launch>

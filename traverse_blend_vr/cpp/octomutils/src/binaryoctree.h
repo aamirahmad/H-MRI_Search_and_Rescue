@@ -16,27 +16,28 @@ public:
     BinaryOctree();
     BinaryOctree(std::istream &s);
 
-    std::vector<std::bitset<8> > read(std::istream &s);
-    float getResolution();
-    int getSize();
-    std::vector<std::bitset<8> > *getData();
-    std::string getID();
+    std::vector<std::bitset<8> >    read(std::istream &s);
+    float                           getResolution();
+    int                             getSize();
+    std::vector<std::bitset<8> >    *getData();
+    std::string                     getID();
 
-    void setSize(int size);
-    void setResolution(float res);
-   void setID(std::string id);
+
+    void                            setSize(int size);
+    void                            setResolution(float res);
+    void                            setID(std::string id);
 
 private:
-    bool readHeader(std::istream& s, std::string& id, int& size, float& res);
+    bool                            readHeader(std::istream& s, std::string& id, int& size, float& res);
 
-    std::vector<std::bitset<8> > readBinaryData(std::istream &s,unsigned size);
+    std::vector<std::bitset<8> >    readBinaryData(std::istream &s,unsigned size);
 
-    static const std::string fileHeader;
-    static const std::string binaryFileHeader;
-    std::string id_;
-    float resolution_;
-    int size_;
-    std::vector<std::bitset<8> > data_;
+    static const std::string        fileHeader;
+    static const std::string        binaryFileHeader;
+    std::string                     id_;
+    float                           resolution_;
+    int                             size_;
+    std::vector<std::bitset<8> >    data_;
 };
 
 #endif // BINARYOCTREE_H

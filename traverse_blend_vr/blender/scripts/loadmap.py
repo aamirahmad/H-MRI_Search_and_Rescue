@@ -1,182 +1,175 @@
 
-from bge import logic,events
-import bpy
+from bge import logic
+from os.path import isfile
 
 
-from os import listdir
-from os.path import isfile, join
-import os.path
+import sys
+sys.path.append("/usr/local/lib/python3.4/dist-packages/pyinotify-0.9.6-py3.4.egg") 
+import pyinotify
+import asyncore
+import os
 
-try:
-    import roslib
-except ImportError as error:
-    print("Could not find ROS. source setup.[ba]sh ?")
-    raise error
+class Loadmap:
+    """
+        @brief When a lib is loaded this callback is called after the lib is loaded
+        @param status: Variable which holds the outcome of the async libload call
+    """
+    @staticmethod
+    def asyncLibLoad_cb(status):
+    	print("Library (%s) loaded in %.2fms." % (status.libraryName, status.timeTaken,))
+    	print(status.progress)
     
-import rospy
-
-from time import sleep
-from std_msgs.msg import Byte
-
-global controller    
-    
-def initSubscriber(contr):
-    
-    rospy.logdebug("init Subscriber")
-    rospy.Subscriber('/loadmap', Byte, loadmapCallback)
-    # spin() simply keeps python from exiting until this node is stopped
-
-def loadmapCallback(msg):
-    global controller
-    # convert the bin ros msg to python represetation of the octomap octree       
-    rospy.loginfo("I heard %s",msg.data)
-    if int(msg.data) == 1:
-        rospy.loginfo("loading a map")
-        loadmap(controller)
-
-#class Loadmap():
-#    """Write here the general documentation of your actuator.
-#    It will appear in the generated online documentation.
-#    """
-#    _name = "Loadmap"
-#    _short_desc = "load an octomap octree as mesh"
-#    
-#    
-#
-#    # define here the data fields required by your actuator
-#    # format is: field name, initial value, type, description
-#    
-#
-#    def __init__(self):
-##        sprint("%s initialization" % obj.name)
-#        # Call the constructor of the parent class
-#        
-#
-#        # Do here actuator specific initializations
-#        self._fullmapfile = "octomapFromFile_part.blend"
-#        self._fullmapfile = "octomapFromFile_noduplicates.blend"
-#        self._fullmapfile = "octomapFromROSTopic_fromData_lvl16.blend"
-#        self._octoMapFileParts = "octomapPart_"
-#        self._fullmapfile = "octomapFromFile_fromData_lvl16.blend"
-#        #self._fullmapfile = "octomapSimple2.blend"
-#        
-#        self.local_data['byte'] = 0
-#        self._fullmapLib = []
-#        self._partmapLib = []
-#        
-#        print('Component initialized')
-
-def unique_libload(file_path):
-    '''Loads a unique instance of a blend.
-    INPUTS:
-        - file_path - path to the blend file
-    OUTPUTS:
-        - added_objects, the object that were added
-    '''
-    scene = logic.getCurrentScene()
-    
-    old_objects = scene.objects + scene.objectsInactive
-
-    if not isfile(file_path):
-        print("no such file: " + file_path + " libloadfailed")
-        return
+    """
+        @brief Reload a blendfile, effectively removing and loading the lib again.
+    """
+    @staticmethod
+    def reload_lib(file_path):
+        Loadmap.remove_lib(file_path)
+        Loadmap.load_lib(file_path)
         
-    f = open(file_path, 'rb').read()
-    identifier = file_path.split('.')[0] + "_lib" + str(.0)
+    
+    """
+        @biref Provided with a valid lib identifier removes the lib from the current scene
+        @param lib: libidentifier
+        @return 
+    """    
+    @staticmethod
+    def remove_lib(file_path):
+        if Loadmap.isBlend(file_path):
+            print("removing lib %s" % Loadmap.makeLibName(file_path))
+            if(Loadmap.makeLibName(file_path) in logic.LibList()):
+                logic.LibFree(Loadmap.makeLibName(file_path))        
+            else:
+                print("lib was not loaded")
 
-    while identifier in logic.LibList():
-        id = identifier.split('.')
-        identifier = id[0] + '.' + str(int(id[1])+1)
-#    print("libload %s " % identifier)
-    logic.LibLoad(identifier, 'Scene', f, async=True)
-    
-    all_obj = scene.objects + scene.objectsInactive
-    
-    added_objects = []
-    
-    for o in all_obj:
-        if o not in old_objects:
-            added_objects.append(o)
-            
-    # set the physics of the loadad map to no colliiosn                
-#    print(bpy.data.objects)
-    for ob in bpy.context.scene.objects:
-        if ob.type == 'MESH' and (ob.name.startswith("mapFrom")):
-            #bpy.context.scene.objects.active = bpy.data.objects["mapFromData"]            
-            ob.game.physics_type = 'STATIC'
-#            ob.game.physics_type = 'NO_COLLISION'
-    
-    return identifier
-  
 
-'''
-    if len(self._fullmapLib) < 1:
-        print("no libs to remove for fullmap")
-    else:
-        for lib in self._fullmapLib:
-            print("removing the current fullmap lib %s" %lib)
-            logic.LibFree(lib)
-
-    print("load the full map")
-    self._fullmapLib.append(self.unique_libload(self._fullmapfile))
+    """
+        @brief Loads a unique instance of a blend.
         
-        
-    if (self.local_data['byte'] & 2):
-        pwd = bpy.path.abspath('/home/eruff/workspace/morse/morse_viz')
-        map_files = [ f for f in listdir(pwd) if isfile(join(pwd,f)) and f.startswith(self._octoMapFileParts)]   
- 
-        print("mapfiles",map_files)               
+        @param filpath path to blend file
+        @return name of loaded lib 
+    """      
+    @staticmethod
+    def load_lib(file_path):
 
-        if len(self._partmapLib) < 1:
-            print("no libs to remove for partial map")
+        if not (Loadmap.isFile(file_path) and Loadmap.isBlend(file_path)):
+            print("no such file or is no blend file")
+            print(file_path)
+            return
+        
+        print("load lib %s" % Loadmap.makeLibName(file_path))   
+        try:
+            f = open(file_path, 'rb')
+            fb = f.read()
+            identifier = Loadmap.makeLibName(file_path)
+            print("libload %s " % identifier)
+            logic.LibLoad(identifier, 'Scene', fb, load_actions=False, verbose=True, load_scripts=False, async=False).onFinish = Loadmap.asyncLibLoad_cb
+        finally:
+            f.close() 
+        
+                
+        # set the physics of the loadad map to no colliiosn                
+    #    print(bpy.data.objects)
+    #    for ob in bpy.context.scene.objects:
+    #        if ob.type == 'MESH' and (ob.name.startswith("mapFrom")):
+    #            ob.game.physics_type = 'NO_COLLISION'
+    
+        return identifier
+        
+    @staticmethod
+    def makeLibName(path):
+        if Loadmap.isBlend(path):
+            return path[:-6]+str('_lib')
         else:
-            for lib in self._partmapLib:
-                print("removing the current partial map lib %s" %lib)
-                logic.LibFree(lib)
+            return ""
+        
+    @staticmethod
+    def isFile(path):
+        if not isfile(path):
+            print("no such file: " + path + " libloadfailed")
+            return False
+        return True
+        
+    @staticmethod
+    def isBlend(path):
+        if path[-6:] != '.blend':
+            print("file does not end with .blend")
+            return False
+        return True
+        
 
-        for octomap in map_files:
-            print("load the partial map ",octomap)
-            self._partmapLib.append(self.unique_libload(octomap))
-        sleep(1)            
-    self.local_data['byte'] = 0
-'''  
 
-def loadmap(contr):
-    owner = contr.owner
-    DIR = "blend_files/octomaps/test_data/"
-    # path joining version for other paths
+
+class EventHandler(pyinotify.ProcessEvent):
     
-    if owner['counter'] < len([name for name in os.listdir(DIR) if os.path.isfile(os.path.join(DIR, name))]) :
-        print (owner['counter'])
-        prefix = "octomapFromFile_fromData_lvl16_"
-        suffix = ".blend"
-        path = DIR + prefix + str(owner['counter']) + suffix
-        unique_libload(path)
-        owner['counter'] += 1 # this is the property that keeps count
+    def process_IN_CREATE(self, event):
+        # load new lib
+        print ("Creating:", event.pathname)
+        Loadmap.load_lib(event.pathname)
+
+    def process_IN_DELETE(self, event):
+        # remove lib
+        print ("Removing:", event.pathname)
+        Loadmap.remove_lib(event.pathname)
+
+    def process_IN_MODIFY(self, event):
+        # reload map
+        print ("Modified:", event.pathname)
+        Loadmap.reload_lib(event.pathname)
+
+    def process_IN_CLOSE_WRITE(self, event):
+        # reload map
+        print ("Close written:", event.pathname)
+
+    def process_IN_MOVED_TO(self, event):
+        # load pathname
+        # delet src_pathname
+        print ("Moved to: ", event.pathname,"from",event.src_pathname)
+        Loadmap.remove_lib(event.src_pathname)
+        Loadmap.load_lib(event.pathname)
+        
+    def process_IN_MOVED_FROM(self, event):
+        print ("IN MOVED FROM")
+        return
+            
+
+def initial_sweep(path):
+    initial_sweep_count = 0
+    for filename in os.listdir(path):
+        if Loadmap.isBlend(filename):
+            Loadmap.load_lib(path + "/" + filename)
+            initial_sweep_count += 1
+    print("the initial sweep loaded ",initial_sweep_count,"libraries of ",len(os.listdir(path)))
+
+    
+
+def setup(contr):
+    owner = contr.owner
+    
+    print("initial sweep") # check if there are already blendfiles in the folder
+    initial_sweep(owner['load_map.dirtowatch'])
+    print("init pyinotify")
+    owner['load_map.mask'] = pyinotify.IN_DELETE | pyinotify.IN_CREATE | pyinotify.IN_MODIFY | pyinotify.IN_MOVED_TO | pyinotify.IN_MOVED_FROM # watched events
+    
+    owner['load_map.wm'] = pyinotify.WatchManager()  # Watch Manager
+    owner['load_map.notifier'] = pyinotify.AsyncNotifier(owner['load_map.wm'], EventHandler())
+    owner['load_map.wm'].add_watch(owner['load_map.dirtowatch'], owner['load_map.mask'])
     
 
 def main(contr):
-    global controller
-    controller = contr
-    """ Main loop of the actuator.
-    Implements the component behaviour
-    """
-    
-
     owner = contr.owner
-
-    if not owner['initLoadmapNode']:
-        print("Init the loadmap ros node only once")
-        rospy.init_node('loadmapIntoBlender')
-        initSubscriber(contr)
-        owner['initLoadmapNode'] = True
-    
-
+    if 'load_map.wm' not in owner:
+        setup(contr)
+    else:
+        asyncore.poll()
         
 
-                       
+def loadall(contr):
+    for i in range(100):
+        if not loadmap(contr):
+            print("no more maps to load")            
+            break
 
     
 if __name__ == "__main__":
-    
     main(logic.getCurrentController())

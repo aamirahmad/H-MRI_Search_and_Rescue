@@ -1,0 +1,22 @@
+
+from bge import logic as GameLogic
+import bpy
+
+def Aktiveer():
+	own['Aktief'] = True
+	NieuwUiterlijk = cont.actuators["VeranderUiterlijk"]
+	NieuwUiterlijk.mesh = "PaarseBalk"
+	cont.activate( NieuwUiterlijk )
+	# get the hidden objecst on the second layer
+		
+cont = GameLogic.getCurrentController()
+scn = GameLogic.getCurrentScene()
+own = cont.owner
+
+	
+Aktiveren = cont.sensors["Aktiveer"]
+if  Aktiveren.positive :
+	if own['uav_id'] == scn.objects['Base']['selected_uav']:
+		Aktiveer()
+		print (own.name, ": geaktiveerd")
+		

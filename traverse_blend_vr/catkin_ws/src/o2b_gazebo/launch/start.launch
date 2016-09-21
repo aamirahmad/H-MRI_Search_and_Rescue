@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="enable_logging" default="false"/>
+  <arg name="enable_ground_truth" default="true"/>
+  <arg name="log_file" default="o2b_gazebo"/>
+  <arg name="paused" default="true" />
+  <arg name="gui" default="true" />
+  <arg name="world"/>
+
+
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find o2b_gazebo)/worlds/$(arg world)"/>
+    <arg name="use_sim_time" value="true" />
+    <!-- arg name="debug" value="true" / -->
+    <arg name="paused" default="$(arg paused)" />
+    <arg name="gui" default="$(arg gui)" />
+  </include>
+
+</launch>
+

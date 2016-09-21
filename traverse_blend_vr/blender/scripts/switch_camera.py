@@ -8,25 +8,35 @@ Created on Wed Oct 28 11:03:23 2015
 import bge
 from bge import logic,events
 
-if __name__ == "__main__":
+def main(contr):
     JUST_ACTIVATED = logic.KX_INPUT_JUST_ACTIVATED
     keyboard = logic.keyboard
 
-    if keyboard.events[events.CKEY] == JUST_ACTIVATED:
+    if keyboard.events[events.VKEY] == JUST_ACTIVATED:
+        own = contr.owner
+        if own['swc.deactivated']:
+            print("sorry, switch camera is currently deactivated")
+            return
+    
 
+    
         scene = bge.logic.getCurrentScene()
         # set active camera    
         for i,cam in zip(range(len(scene.cameras)),scene.cameras):
             if cam == scene.active_camera:            
-                camID = (i + 1) % len(scene.cameras)
+                try:
+                    scene.active_camera = scene.objects[str(scene.cameras[(i + 1) % len(scene.cameras)])]
+                except:
+                    pass
                 break
-        
-        camera = scene.objects[str(scene.cameras[camID])]
-            
-        try:
-            scene.active_camera = camera            
-        except:
-            pass
+    
+
+if __name__ == "__main__":
+    
+    contr = logic.getCurrentController()
+    main(contr)
+
+
 
 
 
