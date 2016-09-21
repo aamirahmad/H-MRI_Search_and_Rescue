@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<launch>
+	<arg name="robotID" default="0" />
+	<include file="$(find traverse_formation_mm)/launch/firefly_tkcore_gazebo.launch">
+		<arg name="robotID" value="$(arg robotID)" />
+	</include>
+
+        <node name="formation_slave_$(arg robotID)" pkg="traverse_formation_mm" type="traverse_formation_slave_node">
+                <param name="FormationSlaveOptions/tRobotID" value="$(arg robotID)" />
+                <param name="FormationSlaveOptions/tRobotIDs" value="[0,1]" />
+                <param name="FormationSlaveOptions/tUsesHumanInput" value="[1,0]" />
+                <param name="FormationSlaveOptions/tJoystickTopic" value="/TeleKyb/tJoy/joy_exp" />
+                <param name="FormationSlaveOptions/tVelocityInputTopic" value="/TeleKyb/tJoy/joy_exp_vector3" />
+                <param name="FormationSlaveOptions/tUseMKInterface" value="false" />
+                <!--param name="Common/tPrintOptions" value="true"/-->
+        </node>
+
+
+</launch>

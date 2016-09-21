@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<launch>
+  
+        <!-- REQUIED by mk_interface -->
+	<arg name="roboID" default="1" />
+	<arg name="rotortype" value="Quadcopter" />
+	<arg name="takeOffHeight" value="-1.05" />
+	<arg name="landHeight" value="-0.25" />
+	<arg name="initialMass" value="1.52" />
+	<arg name="trajectoryFolder" default="simSpiral_3rob" />
+
+
+	<!-- start the joystick node for teleoperation -->
+	<!-- Joystick Logitech 510 Remapping -->
+	<node name="Joystick_0" pkg="telekyb_joystick" type="tJoy_node">
+	      <param name="JoystickOptions/tDevicePath" value="/dev/input/js0" />
+	      <param name="JoystickOptions/tPubName" value="joy_exp" />
+	      <param name="JoystickOptions/tPublishVector3" value="true" />
+	      <param name="JoystickOptions/tButtonRemapping" value="[4,1,2,3,0,5,7,8,6]" />
+	      <param name="JoystickOptions/tAxesRemapping" value="[0,1,2,3,4,5]" />
+	      <param name="JoystickOptions/tAxisMultiplier" value="[-0.2,0.2,-0.2,-0.2,-0.2]" />
+	</node>
+
+	<!-- start the nodes for quadcopter 1 - telekyb core, gazebo interface, experiment -->
+	<include file="$(find hkt_experiments)/launch/include/gazebo_qc_traj_playback.launch">
+		<arg name="roboID" value="1" />
+		<arg name="rotortype" value="Quadcopter" />
+		<arg name="takeOffHeight" value="-1.05" />
+		<arg name="landHeight" value="-0.25" />
+		<arg name="initialMass" value="0.84" />
+		<arg name="trajectoryFolder" value="$(arg trajectoryFolder)" />
+	</include>
+
+	<!-- start the nodes for quadcopter 2 - telekyb core, gazebo interface, experiment -->
+	<include file="$(find hkt_experiments)/launch/include/gazebo_qc_traj_playback.launch">
+		<arg name="roboID" value="2" />
+		<arg name="rotortype" value="Quadcopter" />
+		<arg name="takeOffHeight" value="-1.05" />
+		<arg name="landHeight" value="-0.25" />
+		<arg name="initialMass" value="0.84" />
+		<arg name="trajectoryFolder" value="$(arg trajectoryFolder)" />
+	</include>
+
+	<!-- start the nodes for quadcopter 2 - telekyb core, gazebo interface, experiment -->
+	<include file="$(find hkt_experiments)/launch/include/gazebo_qc_traj_playback.launch">
+		<arg name="roboID" value="3" />
+		<arg name="rotortype" value="Quadcopter" />
+		<arg name="takeOffHeight" value="-1.05" />
+		<arg name="landHeight" value="-0.25" />
+		<arg name="initialMass" value="0.84" />
+		<arg name="trajectoryFolder" value="$(arg trajectoryFolder)" />
+	</include>	
+	
+<!--	<node pkg="rosbag" type="record" name="rosbag_record_diag"
+		args=" -o $(find tk_pstegagno)/bags/sim
+/TeleKyb/TeleKybCore_1/Sensor/TKState
+/TeleKyb/TeleKybCore_2/Sensor/TKState
+/qc_1/ground_truth/imu
+/qc_2/ground_truth/imu
+"/>  -->
+
+</launch>
+

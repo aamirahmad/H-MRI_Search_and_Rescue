@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<!-- -->
+
+<launch>
+	<arg name="robotID" default="0" />
+
+	<!-- Quadcopters -->	
+	<include file="$(find traverse_formation_mm)/launch/includes/UAV_gazebo.launch">
+		<arg name="qcID" value="$(arg robotID)" />
+		<arg name="firmware" value="1641" />
+		<arg name="rotortype" value="Quadcopter" />
+		<arg name="rawAccOffsetX" value="516" />
+		<arg name="rawAccOffsetY" value="499" />
+		<arg name="landHeight" value="-0.25" />
+		<arg name="initialMass" value="1.80" />
+		<arg name="takeOffHeight" value="-2.00" />
+	</include>
+
+	
+	
+</launch>

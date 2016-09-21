@@ -1,0 +1,22 @@
+<?xml version="1.0" ?>
+<launch>
+	<arg name="qcID"/>
+	<arg name="rotortype"/>	
+	<arg name="robotName" default="firefly" />
+	<group ns="TeleKyb" >
+		<group ns="tk_gazebo_interface_$(arg qcID)" >
+	               <param name="robotName" value="$(arg robotName)" />
+        	       <param name="robotID" value="$(arg qcID)" />
+	               <param name="robotNamespace" value="$(arg robotName)_$(arg qcID)" />
+		</group>
+	</group>
+        <!-- Euroc Thing for the simulator -->
+        <node name="tk_gazebo_interface_$(arg qcID)" pkg="tk_gazebo_interface" type="tk_gazebo_interface">
+                <remap from="/default/imu" to="/firefly_$(arg qcID)/imu"/>
+                <remap from="/default/ground_truth/pose" to="/firefly_$(arg qcID)/ground_truth/pose"/>
+                <remap from="/TeleKyb/0/Commands" to="/TeleKyb/$(arg qcID)/Commands"/>
+                <remap from="/default/command/attitude" to="/firefly_$(arg qcID)/command/attitude"/>
+                <remap from="/TeleKyb/0/MotorCommands" to="/TeleKyb/$(arg qcID)/MotorCommands"/>
+                <remap from="/TeleKyb/Vicon/Quadcopter_0/Quadcopter_0" to="/TeleKyb/Vicon/$(arg rotortype)_$(arg qcID)/$(arg rotortype)_$(arg qcID)"/>
+        </node>
+</launch>

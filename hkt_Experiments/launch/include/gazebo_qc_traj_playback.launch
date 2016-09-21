@@ -1,0 +1,79 @@
+<?xml version="1.0"?>
+<launch>
+  
+        <!-- REQUIED by mk_interface -->
+	<arg name="roboID" default="1" />
+	<arg name="rotortype" default="Quadcopter" />
+	<arg name="takeOffHeight" default="-1.05" />
+	<arg name="landHeight" default="-0.25" />
+	<arg name="initialMass" default="1.52" />
+	<arg name="trajectoryFolder" default="sim9_uav1-6_NED_150s_1static" />
+
+
+	<!-- start the joystick node for teleoperation -->
+	<!-- node name="tJoy_node" pkg="telekyb_joystick" type="tJoy_node" /-->
+
+	<!-- telekyb core  -->
+	<node name="TeleKybCore_$(arg roboID)" pkg="telekyb_core" type="telekyb_core_node">
+		<param name="TeleKybCore/tRobotID" value="$(arg roboID)" />
+
+		<param name="StateEstimatorController/tPluginLookupName" value="state_estimators_plugin::ViconStateEstimator"/>
+		<param name="StateEstimatorController/tPublishRosTransform" value="false"/>
+		<param name="ViconStateEstimator/tViconSeTopicName" value="/TeleKyb/Vicon/$(arg rotortype)_$(arg roboID)/$(arg rotortype)_$(arg roboID)/" />
+
+		<param name="TrajectoryController/tPluginLookupName" value="trajectory_trackers_plugin::StandardTrajectoryTracker"/>
+		<param name="StandardTrajectoryTracker/tCommandsTopic" value="/TeleKyb/$(arg roboID)/Commands" />
+		
+		<param name="PositionControl/tDerivGain" value="2.3" />
+		<param name="PositionControl/tXDerivGain" value="1.0" />
+		<param name="PositionControl/tYDerivGain" value="0.9" />
+		<param name="PositionControl/tPropGain" value="3.5" />
+		<param name="PositionControl/tXPropGain" value="0.65" />
+		<param name="PositionControl/tYPropGain" value="0.8" />
+		<param name="PositionControl/tIntegGain" value="2.2" />
+		<param name="PositionControl/tXIntegGain" value="0.8" />
+		<param name="PositionControl/tYIntegGain" value="0.8" />
+		<param name="PositionControl/tSatIntTerm" value="1.0" />
+		
+		<param name="PositionControl/tZPropGain" value="25.5" />
+		<param name="PositionControl/tZDerivGain" value="11.9" />
+		<param name="PositionControl/tZIntegGain" value="9.0" />
+		<param name="PositionControl/tGravity" value="9.8" />
+		
+		<param name="PositionControl/tDerGainVelMode" value="6" />
+		<param name="PositionControl/tIntegVelGain" value="1.5" />
+		
+		<param name="StandardMassEstim/tInitialMass" value="$(arg initialMass)"/>
+		
+		<param name="TrajectoryProcessorController/tTrajectoryModules" value='[]'/>
+		<param name="tTakeOffDestination" value="[0.0, 0.0, $(arg takeOffHeight)]"/>
+		<param name="tTakeOffVertically" value="false"/>
+		<param name="tLandDestinationHeight" value="$(arg landHeight)" />
+	</node>
+
+	<!-- Euroc Thing for the simulator -->
+	<node name="euroc_solution_$(arg roboID)" pkg="tk_gazebo_interface" type="tk_gazebo_interface">
+ 	       <param name="robotName" value="firefly" />
+ 	       <param name="robotID" value="$(arg roboID)" />
+		<remap from="/default/imu" to="/firefly_$(arg roboID)/imu"/>
+		<remap from="/default/pose" to="/firefly_$(arg roboID)/ground_truth/pose"/>
+		<remap from="/default/ground_truth/pose" to="/firefly_$(arg roboID)/ground_truth/pose"/>
+		<remap from="/TeleKyb/0/Commands" to="/TeleKyb/$(arg roboID)/Commands"/>
+		<remap from="/TeleKyb/0/MotorCommands" to="/TeleKyb/$(arg roboID)/MotorCommands"/>
+		<remap from="/default/command/attitude" to="/firefly_$(arg roboID)/command/attitude"/>
+		<remap from="/TeleKyb/Vicon/$(arg rotortype)_0/$(arg rotortype)_0/" to="/TeleKyb/Vicon/$(arg rotortype)_$(arg roboID)/$(arg rotortype)_$(arg roboID)/" />
+	</node>
+
+	<!-- Experiment-->
+	<node name="tk_exp_trajectory_playback_$(arg roboID)" pkg="tk_exp_trajectory_playback" type="tk_exp_trajectory_playback">
+	      <param name="ExperimentOptions/robotID" value="$(arg roboID)" />
+	      <param name="ExperimentOptions/tJoystickTopic" value="/TeleKyb/tJoy/joy" />
+	      <param name="ExperimentOptions/tUseMKInterface" value="false" />
+	      <param name="ExperimentOptions/tTrajPlaybackFilename" value="$(find hkt_experiments)/trajectories/$(arg trajectoryFolder)/traj$(arg roboID).txt" />
+	      <param name="ExperimentOptions/tUseJoystick" value="false" />
+	      <param name="ExperimentOptions/tTakeoffTime" value="15.0" />
+	      <param name="ExperimentOptions/tTrajectoryStarts" value="25.0" />
+	</node> 
+
+
+</launch>

@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+
+<launch>
+  <arg name="gui" default="true"/>
+
+  <include file="$(find traverse_gazebo)/launch/start.launch">
+   <arg name="world" value="arena_8walls_blocks_ramps.world"/>
+   <arg name="gui" value="$(arg gui)"/> 
+  </include>
+
+</launch>

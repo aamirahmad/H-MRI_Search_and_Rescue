@@ -1,0 +1,10 @@
+# KILLED THE genereate_exp.py SCRIPT
+simply restart it with the follwoing command
+./generate_exp.py --l="[(5, 'semi_auto_control'), (5, 'full_autonomous'), (5, 'full_autonomous'), (2, 'full_autonomous'), (5, 'full_control'), (2, 'full_autonomous'), (2, 'semi_auto_control'), (2, 'semi_auto_control'), (2, 'full_control'), (2, 'full_control'), (5, 'semi_auto_control'), (2, 'full_control'), (5, 'semi_auto_control'), (5, 'full_autonomous'), (5, 'full_control'), (2, 'semi_auto_control'), (5, 'full_control'), (2, 'full_autonomous')]" --tu="(14,1,6,2,17,12,10,11,18,2,16,13,15,9,8)"
+
+where --l is the array of tuple for the experiments
+and --tu a tuple (curvy brackets) with the already used maps
+
+
+# MAP FRAGMENTS STILL LEFT IN SCENE
+simply start the cleanup.sh script 

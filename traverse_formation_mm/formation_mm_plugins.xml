@@ -1,0 +1,8 @@
+<library path="lib/libtraverse_formation_mm_behavior">
+  <!-- Formation Behavior -->
+  <class name="traverse_formation_mm/Traverse_Formation_mm" type="telekyb_behavior::Traverse_Formation_mm" base_class_type="telekyb::Behavior">
+    <description>Formation with the option to stare at one point</description>
+  </class>
+</library>
+
+

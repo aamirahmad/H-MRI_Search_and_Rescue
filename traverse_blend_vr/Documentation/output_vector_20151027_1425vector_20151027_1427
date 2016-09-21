@@ -1,0 +1,20 @@
+./octomutils_exe /home/eruff/workspace/octomapToBlend/datasets/fr_campus.bt /home/eruff/workspace/octomapToBlend/datasets/fr_campus.bt
+/home/eruff/workspace/octomapToBlend/datasets/fr_campus.bt
+/home/eruff/workspace/octomapToBlend/datasets/fr_campus.bt
+id OcTree size  5515178 res 0.2
+reading first file 0.219576
+
+id OcTree size  5515178 res 0.2
+reading both files 0.436134
+
+get the first Subtree took 1.23982
+
+get both Subtree took 2.48171
+
+number of subtrees found in tree 1 409
+number of subtrees found in tree 2 409
+comparing octrees 
+comparing subtrees  0.03321
+0 subtrees needs to be updated or replaced
+read the octomap took 2.95124
+

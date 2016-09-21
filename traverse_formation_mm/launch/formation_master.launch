@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<!-- -->
+
+<launch>
+	<arg name="robotIDs" default="[43,44]" />
+	<arg name="humanInput" default="[1,0]" />
+	<arg name="joystickID" default="0" />
+        <include file="$(find traverse_formation_mm)/launch/joystick_TH.launch" >
+		<arg name="deviceId" value="$(arg joystickID)" />
+	</include>
+
+
+	<node name="formation_master" pkg="traverse_formation_mm" type="traverse_formation_ctrl_node">
+		<param name="FormationControlOptions/tRobotIDs" value="$(arg robotIDs)" />
+		<param name="FormationControlOptions/tUsesHumanInput" value="$(arg humanInput)" />    	
+		<param name="FormationControlOptions/tJoystickTopic" value="/TeleKyb/tJoy/joy_exp" />
+	      	<param name="FormationControlOptions/tVelocityInputTopic" value="/TeleKyb/tJoy/joy_exp_vector3" />
+	      	<param name="FormationControlOptions/tUseMKInterface" value="false" />
+	      	<param name="FormationControlOptions/tDoYawFixPointControl" value="true" />
+	      	<param name="FormationControlOptions/tFixPointInputTopic" value="/fixedObject" />
+	      	<param name="FormationControlOptions/tMaxYawRate" value="0.5" />
+		<!--param name="Common/tPrintOptions" value="true"/-->
+		<param name="FormationControlOptions/tUseJoystick" value="false" />		
+	</node>
+	
+	
+</launch>

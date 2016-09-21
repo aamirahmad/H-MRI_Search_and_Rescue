@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+<launch>
+
+	<arg name="qcID" />
+
+        <node name="Obstacle_$(arg qcID)" pkg="tk_obstacle" type="obstacle_provider" respawn="true">
+                <param name="ObstacleProviderController/tObstacleProviders" value='[ "tk_obstacle/SurroundingBox" ]'/>
+                <param name="ObstacleProviderController/tTKStateTopicName" value="/TeleKyb/TeleKybCore_$(arg qcID)/Sensor/TKState" />
+                <param name="SurroundingBox/tMinSurrObsBox" value="[-3.2,-1.5,-5.0]" />
+                <param name="SurroundingBox/tMaxSurrObsBox" value="[3.2,3.8,-0.2]" />
+                <param name="ExternalObsPoint/tObsTransformTopicNames" value='[ "/TeleKyb/Vicon/Hand2/Hand2" ]' />
+                <param name="ExternalObsPoint/tObsRadius" value='[ 0.5 ]' />
+        </node>
+
+</launch>

@@ -1,0 +1,14 @@
+<?xml version="1.0" ?>
+<launch>
+	<arg name="joyPubName" default="joy_exp" />
+        <arg name="deviceId" default="0" />
+        <!-- Joystick Logitech 510 Remapping -->
+        <node name="tk_formation_mm_joystick" pkg="telekyb_joystick" type="tJoy_node">
+              <param name="JoystickOptions/tDevicePath" value="/dev/input/js$(arg deviceId)" />
+	      <param name="JoystickOptions/tPubName" value="$(arg joyPubName)" />
+	      <param name="JoystickOptions/tPublishVector3" value="true" />
+	      <param name="JoystickOptions/tButtonRemapping" value="[4,1,2,3,0,5,7,8,6]" />
+	      <param name="JoystickOptions/tAxesRemapping" value="[5,2,3,1,0,4]" />
+	      <param name="JoystickOptions/tAxisMultiplier" value="[0.7,-0.6,-0.3,-1.0,1.0]" />
+	</node>
+</launch>

@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<launch>
+
+	<!-- setting parameters shared by mk interface and tk core -->
+	<arg name="qcID" default="-1" />
+
+      <!-- MK --> 
+	<include file="$(find traverse_formation_mm)/launch/mk_interface_TH.launch">
+		<arg name="qcID" value="$(arg qcID)" />
+	</include>        
+ 
+	<include file="$(find traverse_formation_mm)/launch/tk_core_TH.launch">
+		<arg name="qcID" value="$(arg qcID)" />
+	</include>        
+
+	<include file="$(find traverse_formation_mm)/launch/boundingbox_TH.launch">
+		<arg name="qcID" value="$(arg qcID)" />
+	</include>        
+
+	
+        <include file="$(find traverse_formation_mm)/launch/formation_slave_TH.launch">
+                <arg name="robotID" value="$(arg qcID)"/>
+        </include>
+
+
+	
+</launch>

@@ -1,0 +1,8 @@
+<library path="lib/libtraverse_flyto_safe_behavior">
+  <!-- Formation Behavior -->
+  <class name="traverse_flyto_safe/Flyto_safe" type="telekyb_behavior::Flyto_safe" base_class_type="telekyb::Behavior">
+    <description>Robots in a formation individually fly to a prescribed location without colliding into each other or other obstacles</description>
+  </class>
+</library>
+
+

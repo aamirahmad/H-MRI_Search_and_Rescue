@@ -1,0 +1,25 @@
+<?xml version="1.0" ?>
+<launch>
+
+        <arg name="qcID"/>
+        <arg name="firmware" value="4102" />
+        <arg name="emergencyThrust" value="60" />
+
+
+      <!-- MK -->
+        <node name="MKInterface_$(arg qcID)" pkg="tk_mkinterface" type="mkinterface">
+                <param name="MKInterface/tUavId" value="$(arg qcID)" />
+                <param name="MKInterface/tUavFirmware" value="$(arg firmware)" />
+                <param name="MKInterface/tEmergencyThrust" value="$(arg emergencyThrust)" />
+                <param name="MKInterface/tInitialDriftEstim" value="true" />
+                <param name="MKInterfaceConnection/tBaudRate" value="BAUD115200" />
+                <!-- <param name="MKInterface/tSerialDeviceNameRegex" value="$(arg serial_device1)" />  -->
+                <param name="MKROSInterface/tCommandsTopic" value="/TeleKyb/$(arg qcID)/Commands" />
+                <param name="MKROSInterface/tEmergencyLandService" value="/TeleKyb/TeleKybSystem_$(arg qcID)/Behavior/EmergencyLand" />
+
+                <param name="MKInterface/tUavPropGain" value="3" />
+                <param name="MKInterface/tUavDerivGain" value="4" />
+                <param name="MKInterface/tUavIntegGain" value="0" /><!-- SHOULD STAY 0.0 !! -->
+        </node>
+
+</launch>

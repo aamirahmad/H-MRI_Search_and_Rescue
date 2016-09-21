@@ -1,0 +1,9 @@
+<?xml version="1.0" ?>
+<launch>
+	<arg name="hostname" default="192.168.1.100:801" />
+       <!-- Vicon -->
+        <node name="Vicon" pkg="telekyb_vicon" type="telekyb_vicon">
+              <param name="ViconTracker/tTrackerHostname" value="$(arg hostname)" />
+        </node>
+</launch>
+

@@ -1,0 +1,72 @@
+<?xml version="1.0"?>
+<!-- -->
+
+
+<launch>
+
+	<!-- setting parameters shared by mk interface and tk core -->
+	<arg name="rotortype" value="UAV_Octo" />
+	<arg name="qcID" value="43" />
+	<arg name="landHeight" value="-0.32" />
+	<arg name="initialMass" value="0.9" />
+	<arg name="takeOffHeight" value="-1.00" />
+	<arg name="firmware" value="4102" />
+	<arg name="emergencyThrust" value="60" />
+	<!-- setting the vicon topic for the state estimation -->
+	<arg name="vicon_topic" default="/TeleKyb/Vicon/$(arg rotortype)_$(arg qcID)/$(arg rotortype)_$(arg qcID)" />
+
+      <!-- MK --> 
+        <node name="MKInterface_$(arg qcID)" pkg="tk_mkinterface" type="mkinterface"> 
+                <param name="MKInterface/tUavId" value="$(arg qcID)" /> 
+                <param name="MKInterface/tUavFirmware" value="$(arg firmware)" /> 
+                <param name="MKInterface/tEmergencyThrust" value="$(arg emergencyThrust)" /> 
+                <param name="MKInterface/tInitialDriftEstim" value="true" /> 
+                <param name="MKInterfaceConnection/tBaudRate" value="BAUD115200" /> 
+                <!-- <param name="MKInterface/tSerialDeviceNameRegex" value="$(arg serial_device1)" />  -->
+                <param name="MKROSInterface/tCommandsTopic" value="/TeleKyb/$(arg qcID)/Commands" /> 
+                <param name="MKROSInterface/tEmergencyLandService" value="/TeleKyb/TeleKybSystem_$(arg qcID)/Behavior/EmergencyLand" /> 
+ 
+                <param name="MKInterface/tUavPropGain" value="3" /> 
+                <param name="MKInterface/tUavDerivGain" value="4" /> 
+                <param name="MKInterface/tUavIntegGain" value="0" /><!-- SHOULD STAY 0.0 !! --> 
+        </node> 
+ 
+
+	<node name="TeleKybCore_$(arg qcID)" pkg="telekyb_core" type="telekyb_core_node">
+		<param name="TeleKybCore/tRobotID" value="$(arg qcID)" />
+		<param name="StateEstimatorController/tPluginLookupName" value="state_estimators_plugin::ViconStateEstimator" />
+		<param name="TrajectoryController/tPluginLookupName" value="trajectory_trackers_plugin::StandardTrajectoryTracker" />
+		<param name="StandardTrajectoryTracker/tCommandsTopic" value="/TeleKyb/$(arg qcID)/Commands" />
+		<param name="StateEstimatorController/tPublishRosTransform" value="false" />
+		<param name="ViconStateEstimator/tViconSeTopicName" value="$(arg vicon_topic)" />
+		
+		<param name="StandardMassEstim/tInitialMass" value="$(arg initialMass)"/>
+		
+		<param name="PositionControl/tDerGainVelMode" value="5" /> <!-- value of 5 seems quite nice together with the values below -->
+		<param name="PositionControl/tPropGain" value="2.25" /><!-- default: 9 -->
+		<param name="PositionControl/tDerivGain" value="3.75" /><!-- default: 7.5 -->
+		<param name="PositionControl/tIntegGain" value="0" /> <!-- default: 4.5 -->
+
+		<param name="PositionControl/tMaxRollSin" value="0.087155743" /><!-- sin(5.0*M_PI/180.0) -->
+		<param name="PositionControl/tMaxPitchSin" value="0.087155743" /><!-- sin(5.0*M_PI/180.0) -->
+
+		<param name="TrajectoryProcessorController/tTrajectoryModules" value='[]' />
+		<param name="StandardMassEstim/tInitialMass" value="$(arg initialMass)" />
+		<param name="tCenterValueX" value="512" />
+		<param name="tCenterValueY" value="512" />
+		<param name="tTakeOffDestination" value="[0.0, 0.0, $(arg takeOffHeight)]" />
+		<param name="tLandDestinationHeight" value="$(arg landHeight)" />
+		
+		<param name="tObsPointsTopicName" value="/TeleKyb/Obstacle_$(arg qcID)/ObstaclePoints"/>
+	
+		<!--param name="tJoystickUseDeadManSwitch" value="false" / -->
+		<!--param name="tJoystickUsePositionMode" value="false" / -->
+	</node>
+
+	
+	<include file="formation_slave_TH.launch">
+		<param name="robotID" value="$(arg qcID)"/>
+	</include>	
+
+	
+</launch>

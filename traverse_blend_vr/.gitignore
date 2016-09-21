@@ -1,0 +1,18 @@
+# ignore the build and devel folder of the catkin_ws
+catkin_ws/build
+catkin_ws/devel
+
+# ignore objects and archives, anywhere in the tree.
+*.[oa]
+
+# ignore all build folders in the cpp lib subfolder
+lib/*/build
+cpp/*/build/
+
+# ignore the large octomap datasets
+datasets/*
+# ignore large sets of blend file which are basically only test outputs
+blender/blend_files/octomaps/test_data/*
+
+# ignore qtcreator files
+cpp/*/octomutils.*

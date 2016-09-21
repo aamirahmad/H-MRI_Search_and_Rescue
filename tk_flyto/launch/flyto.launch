@@ -1,0 +1,22 @@
+<?xml version="1.0" ?>
+
+<launch>
+
+	<arg name="robotID" default="-1" />
+        <arg name="flyto_nodeName" value="tk_filtflyto_$(arg robotID)_node" />
+	<!-- 
+        <include file="$(find tk_formation_mm)/launch/firefly_tkcore_gazebo.launch">
+                <arg name="robotID" value="$(arg robotID)" />
+        </include>
+	-->
+
+        <group ns="TeleKyb">
+                <group ns="$(arg flyto_nodeName)">
+                        <param name="robotID" value="$(arg robotID)" />
+                </group>
+        </group>
+
+
+        <node name="$(arg flyto_nodeName)" pkg="tk_filtflyto" type="tk_filtflyto_node" />
+
+</launch>

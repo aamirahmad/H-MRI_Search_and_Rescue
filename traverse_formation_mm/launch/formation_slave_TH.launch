@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<launch>
+	<arg name="robotID" />
+
+
+        <node name="formation_slave_$(arg robotID)" pkg="traverse_formation_mm" type="treaverse_formation_slave_node">
+                <param name="FormationSlaveOptions/tRobotID" value="$(arg robotID)" />
+                <param name="FormationSlaveOptions/tRobotIDs" value="[0,1]" />
+                <param name="FormationSlaveOptions/tUsesHumanInput" value="[1,0]" />
+                <param name="FormationSlaveOptions/tJoystickTopic" value="/TeleKyb/tJoy/joy_exp" />
+                <param name="FormationSlaveOptions/tVelocityInputTopic" value="/TeleKyb/tJoy/joy_exp_vector3" />
+                <param name="FormationSlaveOptions/tUseMKInterface" value="true" />
+                <!--param name="Common/tPrintOptions" value="true"/-->
+        </node>
+
+
+</launch>
