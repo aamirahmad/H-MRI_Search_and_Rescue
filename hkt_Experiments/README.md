@@ -1,5 +1,5 @@
 # HKT_Experiments
-Experimental setups for the experiments at HKT
+Experimental setups for the H-MRI search experiments. Package is prefixed HKT to remember that the first pilot of this experiment was done in a monastary in south germany called Heilegekreutztal. ( http://www.kloster-heiligkreuztal.de/meta/start.html )
 # setting up 
 
 ## ROS side of things
