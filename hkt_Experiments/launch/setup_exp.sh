@@ -25,7 +25,7 @@ for i in $(seq 0 $(($ROBOS-1))); do
 	roslaunch telekyb_gazebo spawn_firefly_withID.launch roboID:=$id X:=${Xs[$i]}  Y:=${Ys[$i]} &
 	sleep 10	
 	if [ "$MODE" != "full_autonomous" ]; then 
-		roslaunch tk_formation_mm firefly_tkcore_gazebo.launch robotID:=$id &
+		roslaunch traverse_formation_mm firefly_tkcore_gazebo.launch robotID:=$id &
 	fi
 	sleep 2
 	rosrun hkt_experiments uav_state_tf_closer $id & 
